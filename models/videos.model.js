@@ -12,7 +12,7 @@ const videoSchema = new mongoose.Schema({
         ref: "User"
     },
     videoFile:{
-        type:String,
+        type:String,                                    //cloudinary url
         required: [true,"Please upload video file"]
     },
     viewCount: {
@@ -20,7 +20,15 @@ const videoSchema = new mongoose.Schema({
         default: 0
     },
     thumbnail : String,
-    isPublished: Boolean,
+    isPublished: {
+        type: Boolean,
+        required: true,
+    },
     description : String,
-    duration : Number
+    duration :{
+        required: true,
+        type: Number
+    }
 }, {timestamps:true})
+
+export const Video = mongoose.model("Video", videoSchema);
