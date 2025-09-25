@@ -1,5 +1,8 @@
 import {connectDB} from './db/index.js'
 import {app} from './app.js'
+import cors from "cors"
+
+app.use(cors({origin : '*'}))
 
 connectDB().then(()=>{
     app.listen(8000, ()=>{
