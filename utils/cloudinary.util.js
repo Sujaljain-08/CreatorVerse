@@ -13,17 +13,16 @@ export const uploadOnCloudinary = async function (localFilePath) {
       throw new Error(`No Local file corresponding to path ${localFilePath} found`)
     }
 
-    const response = cloudinary.uploader
-      .upload("dog.mp4", {
+    const response = await cloudinary.uploader
+      .upload(localFilePath, {
         resource_type: "auto",
       })
-    
-    console.log("File uploaded on cloudinary" + response.url );
-    return response;
-    
+     
+    return response.url
+
   }catch(err){
     fs.unlinkSync(localFilePath);
-    console.error("Failed file upload to cloudinary" + err);
+    console.error("Failed file upload to cloudinary ");
     return null;
   }
 }

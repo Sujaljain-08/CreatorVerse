@@ -1,5 +1,6 @@
 import {connectDB} from './db/index.js'
 import {app} from './app.js'
+import { uploadOnCloudinary } from './utils/cloudinary.util.js';
 
 connectDB().then(()=>{
     app.listen(8000, ()=>{
@@ -8,3 +9,5 @@ connectDB().then(()=>{
 }).catch((err)=>{
     console.error("ERROR :" + err);
 })
+
+uploadOnCloudinary
