@@ -28,8 +28,7 @@ export const registerUser = asyncWrapper( async(req, res)=>{
     const avatarLocalPath = req.files.avatar[0].path;
     let coverImageLocalPath = "";
 
-    if(coverImage){
-        coverImageLocalPath = req.files.coverImage[0].path;
+    if(coverImage){    coverImageLocalPath = req.files.coverImage[0].path;
     }
 
     let coverImageCloudUrl = "";
@@ -58,5 +57,11 @@ export const registerUser = asyncWrapper( async(req, res)=>{
  })
 
 export const loginUser = asyncWrapper( async(req, res)=>{
-    return res.send("At login endpoint")
+    //check email and password is not empty or take username also
+    //try to search for id from db
+    //then compare pass and hashed pass
+    //if matched generate jwt and return
+
+
 })
+    

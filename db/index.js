@@ -7,7 +7,7 @@ const app = express();
 export const connectDB = async () => {
     try {
 
-        const connection = await mongoose.connect(`${process.env.DATABASE_URI}/${process.env.DB_NAME}`)
+        await mongoose.connect(`${process.env.DATABASE_URI}/${process.env.DB_NAME}`)
         console.log("DB connection established successfully")
 
     } catch (err) {
