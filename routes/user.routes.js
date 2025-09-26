@@ -16,5 +16,7 @@ Router.get("/logout", isUserAuthorized, controller.logoutUser);
 
 Router.get("/refresh", controller.refreshToken_endpoint);
 
+Router.post("/changePassword",upload.none(), isUserAuthorized, controller.changePassword);
+
 export default Router;
 
