@@ -2,6 +2,12 @@ import { asyncWrapper } from "../utils/asyncwrapper.js";
 import { User } from "../models/user.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.util.js"
 import { customErrors } from "../utils/errorHandler.js";
+import jwt from "jsonwebtoken"
+
+const options = {
+    httpOnly : true,
+    secure : true
+}
 
 export const registerUser = asyncWrapper( async (req, res) => {
     const { fullName, username, email, Password } = req.body;
@@ -117,3 +123,30 @@ export const logoutUser = asyncWrapper( async(req, res)=>{
        .status(200)
        .json({message: "User logged out successfully"})
 })
+
+export const refreshToken_endpoint = async (req, res)=>{
+
+    let refreshToken = req.cookies.refreshToken;
+
+    if(!refreshToken){
+        throw new customErrors(401, "Invalid refresh token");
+    }
+    
+    try{
+        const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
+
+
+        const user = await User.findById(decode._id)
+
+        const accessToken = user.generateAccessToken();
+
+        refreshToken = user.generateRefreshToken();
+
+        res.cookie("refreshToken", refreshToken, options)
+           .cookie("accessToken", accessToken, options)
+           .json({message : "refreshToken and accessToken reset successfully"})
+
+    }catch(jwterr){
+        throw new customErrors(401, jwterr)
+    }
+}

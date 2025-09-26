@@ -12,7 +12,9 @@ Router.post("/register", upload.fields(
 
 Router.post("/login", upload.none(), controller.loginUser);
 
-Router.get("/logout", isUserAuthorized, controller.logoutUser)
+Router.get("/logout", isUserAuthorized, controller.logoutUser);
+
+Router.get("/refresh", controller.refreshToken_endpoint);
 
 export default Router;
 

@@ -10,15 +10,25 @@ export const isUserAuthorized = asyncWrapper(async (req, res, next)=>{
         throw new customErrors(401, "Not authorized please login again");
     }
 
-    const result = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
-
-    if( result ){
-
+    try {
+        const result = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
+        
         const user = await User.findById(result._id).select("-Password -refreshToken")
+        
+        if(!user) {
+            throw new customErrors(401, "Invalid token - user not found");
+        }
+        
         req.user = user;
         next();
-
-    }else{
-        throw new customErrors(401, result.error)
+        
+    } catch (jwtError) {
+        if (jwtError.name === 'TokenExpiredError') {
+            throw new customErrors(401, "Token expired - please login again");
+        } else if (jwtError.name === 'JsonWebTokenError') {
+            throw new customErrors(401, "Invalid token - please login again");
+        } else {
+            throw jwtError;
+        }
     }
 })
