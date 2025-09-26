@@ -1,5 +1,6 @@
 import express from "express"
 import { upload } from "../middlewares/multer.middleware.js"
+import { isUserAuthorized } from "../middlewares/auth.middleware.js";
 
 const Router = express.Router();
 
@@ -10,6 +11,8 @@ Router.post("/register", upload.fields(
 ), controller.registerUser);
 
 Router.post("/login", upload.none(), controller.loginUser);
+
+Router.get("/logout", isUserAuthorized, controller.logoutUser)
 
 export default Router;
 

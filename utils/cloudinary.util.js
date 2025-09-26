@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary'
 import fs from "node:fs"
+import { customErrors } from './errorHandler.js';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -24,7 +25,6 @@ export const uploadOnCloudinary = async function (localFilePath) {
 
   }catch(err){
     fs.unlinkSync(localFilePath);
-    console.error("Failed file upload to cloudinary ");
-    return null;
+    throw new customErrors(500, `failed upload on cloudinary of ${localFilePath}`)
   }
 }
