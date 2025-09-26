@@ -9,7 +9,7 @@ Router.post("/register", upload.fields(
     [{ name: 'avatar', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]
 ), controller.registerUser);
 
-Router.post("/login", controller.loginUser);
+Router.post("/login", upload.none(), controller.loginUser);
 
 export default Router;
 
