@@ -245,7 +245,7 @@ export const getProfile = asyncWrapper(async (req, res) => {
     const user = await User.aggregate([
         {
             $match: {
-                _id: mongoose.Types.ObjectId(req.user._id)
+                _id: new mongoose.Types.ObjectId(req.user._id)
             }
         },
         {
@@ -295,7 +295,7 @@ export const getProfile = asyncWrapper(async (req, res) => {
 })
 
 export const getWatchHistroy = asyncWrapper(async (req, res) => {
-    const user = await User.aggregate([
+    const [user] = await User.aggregate([
         {
             $match: {
                 _id: new mongoose.Types.ObjectId(req.user._id)
@@ -323,7 +323,8 @@ export const getWatchHistroy = asyncWrapper(async (req, res) => {
             }
         },{
             $project : {
-                Password: 0
+                watchedVideos : 1,
+                _id : 0
             }
         }
     ])
