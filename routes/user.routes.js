@@ -24,7 +24,7 @@ Router.patch("/updateAvatar", upload.single('avatar'), isUserAuthorized, control
 
 Router.get("/profileDetails", isUserAuthorized, controller.getProfile)
 
-Router.get("/getWatchHistory", isUserAuthorized, controller.getWatchHistroy)
+Router.get("/getWatchHistory", isUserAuthorized, controller.getWatchHistory)
 
 export default Router;
 
