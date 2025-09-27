@@ -5,7 +5,6 @@ import { customErrors } from "../utils/errorHandler.js";
 import jwt from "jsonwebtoken"
 import { trimValues } from "../utils/trim.util.js"
 import { getPublicIdFromUrl } from "../utils/extract.util.js";
-import { Subscriber } from "../models/subscriber.model.js";
 import mongoose from "mongoose";
 
 const options = {
@@ -295,40 +294,68 @@ export const getProfile = asyncWrapper(async (req, res) => {
 })
 
 export const getWatchHistroy = asyncWrapper(async (req, res) => {
-    const [user] = await User.aggregate([
+    const user = await User.aggregate([
         {
             $match: {
                 _id: new mongoose.Types.ObjectId(req.user._id)
             }
         }, {
+            // Stage 2: Look up the videos from the user's 'watchHistory' array
             $lookup: {
                 from: "videos",
                 localField: "watchHistory",
                 foreignField: "_id",
                 as: "watchedVideos",
+            }
+        }, {
+            $unwind: {
+                path: "$watchedVideos"
+            }
+        }, {
+            $lookup: {
+                from: "users",
+                localField: "watchedVideos.owner",
+                foreignField: "_id",
+                as: "owner",
                 pipeline: [
-                   {
-                    $lookup: {
-                        from: "users",
-                        localField: "owner",
-                        foreignField: "_id",
-                        as: "owner",
+                    {
+                        $project: {
+                            // --- WHITELIST ---
+                            username: 1,      // Keep this field
+                            avatar: 1,        // Keep this field
+                            fullName: 1,      // Keep this field
+
+                            // Password, refreshToken, email, etc., are NOT on the list,
+                            // so they are automatically DISCARDED.
+                        }
                     }
-                },{
-                    $addFields:{
-                        owner : {$arrayElemAt : ["$owner", 0]}
-                    }
-                }
                 ]
             }
-        },{
-            $project : {
-                watchedVideos : 1,
-                _id : 0
+        }, 
+        {
+            $group: {
+                _id: null,
+                watchedVideos: {
+                    $push: {
+                        _id: "$watchedVideos._id",
+                        title: "$watchedVideos.title",
+                        description: "$watchedVideos.description",
+                        thumbnail: "$watchedVideos.thumbnail",
+                        videoFile: "$watchedVideos.videoFile",
+                        duration: "$watchedVideos.duration",
+                        views: "$watchedVideos.views",
+                        isPublished: "$watchedVideos.isPublished",
+                        createdAt: "$watchedVideos.createdAt",
+                        updatedAt: "$watchedVideos.updatedAt",
+                        // Include owner details (first element from the owner array)
+                        owner: {
+                            $first: "$owner"
+                        }
+                    }
+                }
             }
         }
     ])
 
-    res.status(200).json(user);
+    res.send(user)
 })
-

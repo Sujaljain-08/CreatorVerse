@@ -7,7 +7,7 @@ const videoSchema = new mongoose.Schema({
         unique: [true, "This title is already taken"]
     },
     likeCount : Number,
-    owner : {
+    owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
