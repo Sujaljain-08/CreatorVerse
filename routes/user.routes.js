@@ -18,5 +18,7 @@ Router.get("/refresh", controller.refreshToken_endpoint);
 
 Router.post("/changePassword",upload.none(), isUserAuthorized, controller.changePassword);
 
+Router.patch("/updateDetails", upload.single("avatar"), isUserAuthorized, controller.updateDetails )
+
 export default Router;
 

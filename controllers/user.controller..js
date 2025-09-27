@@ -3,7 +3,7 @@ import { User } from "../models/user.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.util.js"
 import { customErrors } from "../utils/errorHandler.js";
 import jwt from "jsonwebtoken"
-import bcrypt from "bcrypt"
+import {trimValues} from "../utils/trim.util.js"
 
 const options = {
     httpOnly: true,
@@ -170,10 +170,40 @@ export const changePassword = asyncWrapper(async (req, res) => {
         throw new customErrors(400, "Incorrect Password")
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await User.findByIdAndUpdate(user._id, {
-        $set: { Password: hashedPassword }
-    });
+    user.Password = newPassword
+    await user.save()
 
     res.status(201).send({ message: "Password changed Successfully" })
+})
+
+export const updateDetails = asyncWrapper(async (req, res) => {
+    let updates = req.body;
+
+    let forbidden_fields = ["Password", "refreshToken", "avatar", "coverImage", "created_at", "updated_at"]
+
+    for(const fields of forbidden_fields){
+        if(updates[fields]){
+            delete updates[fields]
+        }
+    }
+
+    trimValues(updates)
+
+    if(updates["username"]){
+
+        const existingUser = await User.find({"username" : updates["username"]})
+
+        if(!existingUser){
+            throw new customErrors(400, "Username is already taken");
+        }
+    }
+
+    let user = await User.findByIdAndUpdate(req.user._id, {
+        $set : updates
+    },
+    {
+        new:true
+    }).select("-Password -refreshToken -coverImage -avatar -createdAt ")
+
+    res.send(user)
 })
