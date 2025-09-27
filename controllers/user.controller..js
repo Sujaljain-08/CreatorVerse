@@ -245,32 +245,32 @@ export const getProfile = asyncWrapper(async (req, res) => {
     const user = await User.aggregate([
         {
             $match: {
-                _id: new mongoose.Types.ObjectId(req.user._id)
+                _id: mongoose.Types.ObjectId(req.user._id)
             }
-        }, 
+        },
         {
             $lookup: {
-                from: 'subscribers',  
+                from: 'subscribers',
                 localField: '_id',
-                foreignField: 'channel', 
+                foreignField: 'channel',
                 as: 'subscribers'
             }
         },
         {
-            $lookup:{
+            $lookup: {
                 from: 'subscribers',
-                localField: '_id', 
-                foreignField: 'subscriber', 
+                localField: '_id',
+                foreignField: 'subscriber',
                 as: 'subscribedTo'
             }
         },
         {
-            $addFields:{
-                subscriberCount : {  
-                    $size : "$subscribers"
+            $addFields: {
+                subscriberCount: {
+                    $size: "$subscribers"
                 },
-                subscribedToCount : { 
-                    $size : "$subscribedTo"
+                subscribedToCount: {
+                    $size: "$subscribedTo"
                 }
             }
         },
@@ -290,7 +290,32 @@ export const getProfile = asyncWrapper(async (req, res) => {
 
     res.status(200).json({
         success: true,
-        data: user[0]  
+        data: user[0]
     })
+})
+
+export const getWatchHistroy = asyncWrapper(async (Request, res) => {
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: mongoose.Types.ObjectId(req.user._id)
+            }
+        }, {
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchedVideos",
+                pipeline: {
+                    $lookup: {
+                        from: "users",
+                        localField: "owner",
+                        foreignField: "_id",
+                        as: "owner",
+                    }
+                }
+            }
+        }
+    ])
 })
 
