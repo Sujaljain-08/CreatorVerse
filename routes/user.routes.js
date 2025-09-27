@@ -22,5 +22,7 @@ Router.patch("/updateDetails", isUserAuthorized, controller.updateDetails )
 
 Router.patch("/updateAvatar", upload.single('avatar'), isUserAuthorized, controller.updateAvatar)
 
+Router.get("/profileDetails", isUserAuthorized, controller.getProfile)
+
 export default Router;
 

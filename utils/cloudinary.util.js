@@ -28,3 +28,7 @@ export const uploadOnCloudinary = async function (localFilePath) {
     throw new customErrors(500, `failed upload on cloudinary of ${localFilePath}`)
   }
 }
+
+export const deleteAsset = async function(cloudinaryUrl){
+  await cloudinary.uploader.destroy(cloudinaryUrl);
+}

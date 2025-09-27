@@ -1,9 +1,12 @@
 import { asyncWrapper } from "../utils/asyncwrapper.js";
 import { User } from "../models/user.model.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.util.js"
+import { uploadOnCloudinary, deleteAsset } from "../utils/cloudinary.util.js"
 import { customErrors } from "../utils/errorHandler.js";
 import jwt from "jsonwebtoken"
 import { trimValues } from "../utils/trim.util.js"
+import { getPublicIdFromUrl } from "../utils/extract.util.js";
+import { Subscriber } from "../models/subscriber.model.js";
+import mongoose from "mongoose";
 
 const options = {
     httpOnly: true,
@@ -210,11 +213,13 @@ export const updateDetails = asyncWrapper(async (req, res) => {
 
 export const updateAvatar = asyncWrapper(async (req, res) => {
 
-    if(!req.file) throw new customErrors(400, "please upload avatar image to be updated")
+    if (!req.file) throw new customErrors(400, "please upload avatar image to be updated")
 
     let avatarLocalPath = req.file.path
 
     if (!avatarLocalPath) throw new customErrors(500, "failed local upload of avatar please try later")
+
+    let uploadedavatarUrl = getPublicIdFromUrl(req.user.avatar)
 
     let avatarUrl = await uploadOnCloudinary(avatarLocalPath)
 
@@ -228,5 +233,64 @@ export const updateAvatar = asyncWrapper(async (req, res) => {
         new: true
     }).select("-Password -refreshToken -coverImage -email -createdAt ")
 
+    await deleteAsset(uploadedavatarUrl);
+
+    console.log("deleted old assest from cloudinary");
+
     res.send(updatedUser)
 })
+
+export const getProfile = asyncWrapper(async (req, res) => {
+
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user._id)
+            }
+        }, 
+        {
+            $lookup: {
+                from: 'subscribers',  
+                localField: '_id',
+                foreignField: 'channel', 
+                as: 'subscribers'
+            }
+        },
+        {
+            $lookup:{
+                from: 'subscribers',
+                localField: '_id', 
+                foreignField: 'subscriber', 
+                as: 'subscribedTo'
+            }
+        },
+        {
+            $addFields:{
+                subscriberCount : {  
+                    $size : "$subscribers"
+                },
+                subscribedToCount : { 
+                    $size : "$subscribedTo"
+                }
+            }
+        },
+        {
+            $project: {
+                Password: 0,
+                refreshToken: 0,
+                subscribers: 0,
+                subscribedTo: 0
+            }
+        }
+    ])
+
+    if (!user || user.length === 0) {
+        throw new customErrors(404, "User not found");
+    }
+
+    res.status(200).json({
+        success: true,
+        data: user[0]  
+    })
+})
+
