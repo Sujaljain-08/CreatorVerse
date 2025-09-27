@@ -294,11 +294,11 @@ export const getProfile = asyncWrapper(async (req, res) => {
     })
 })
 
-export const getWatchHistroy = asyncWrapper(async (Request, res) => {
+export const getWatchHistroy = asyncWrapper(async (req, res) => {
     const user = await User.aggregate([
         {
             $match: {
-                _id: mongoose.Types.ObjectId(req.user._id)
+                _id: new mongoose.Types.ObjectId(req.user._id)
             }
         }, {
             $lookup: {
@@ -306,16 +306,28 @@ export const getWatchHistroy = asyncWrapper(async (Request, res) => {
                 localField: "watchHistory",
                 foreignField: "_id",
                 as: "watchedVideos",
-                pipeline: {
+                pipeline: [
+                   {
                     $lookup: {
                         from: "users",
                         localField: "owner",
                         foreignField: "_id",
                         as: "owner",
                     }
+                },{
+                    $addFields:{
+                        owner : {$arrayElemAt : ["$owner", 0]}
+                    }
                 }
+                ]
+            }
+        },{
+            $project : {
+                Password: 0
             }
         }
     ])
+
+    res.status(200).json(user);
 })
 
