@@ -11,9 +11,11 @@ app.use(express.json())
 app.use(cookieParser())
 import UserRouter from "./routes/user.routes.js" 
 import SubscribeRouter from "./routes/subscribers.route.js"
+import commentRouter from "./routes/comments.route.js"
 
 app.use("/api/v1/User", UserRouter)
 app.use("/api/v1/Subscribe", SubscribeRouter)
+app.use("/api/v1/Comment", commentRouter)
 app.use(customErrorHandler);
 
 export {app};
