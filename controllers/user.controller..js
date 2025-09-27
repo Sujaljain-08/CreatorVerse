@@ -3,7 +3,7 @@ import { User } from "../models/user.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.util.js"
 import { customErrors } from "../utils/errorHandler.js";
 import jwt from "jsonwebtoken"
-import {trimValues} from "../utils/trim.util.js"
+import { trimValues } from "../utils/trim.util.js"
 
 const options = {
     httpOnly: true,
@@ -179,31 +179,54 @@ export const changePassword = asyncWrapper(async (req, res) => {
 export const updateDetails = asyncWrapper(async (req, res) => {
     let updates = req.body;
 
-    let forbidden_fields = ["Password", "refreshToken", "avatar", "coverImage", "created_at", "updated_at"]
+    let forbidden_fields = ["Password", "refreshToken", "avatar", "coverImage", "created_at", "updated_at", "email"]
 
-    for(const fields of forbidden_fields){
-        if(updates[fields]){
+    for (const fields of forbidden_fields) {
+        if (updates[fields]) {
             delete updates[fields]
         }
     }
 
     trimValues(updates)
 
-    if(updates["username"]){
+    if (updates["username"]) {
 
-        const existingUser = await User.find({"username" : updates["username"]})
+        const existingUser = await User.find({ "username": updates["username"] })
 
-        if(!existingUser){
+        if (!existingUser) {
             throw new customErrors(400, "Username is already taken");
         }
     }
 
     let user = await User.findByIdAndUpdate(req.user._id, {
-        $set : updates
+        $set: updates
     },
-    {
-        new:true
-    }).select("-Password -refreshToken -coverImage -avatar -createdAt ")
+        {
+            new: true
+        }).select("-Password -refreshToken -coverImage -avatar -createdAt ")
 
     res.send(user)
+})
+
+export const updateAvatar = asyncWrapper(async (req, res) => {
+
+    if(!req.file) throw new customErrors(400, "please upload avatar image to be updated")
+
+    let avatarLocalPath = req.file.path
+
+    if (!avatarLocalPath) throw new customErrors(500, "failed local upload of avatar please try later")
+
+    let avatarUrl = await uploadOnCloudinary(avatarLocalPath)
+
+    if (!avatarUrl) throw new customErrors(500, "failed upload on cloudinary, Please try later")
+
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, {
+        $set: {
+            avatar: avatarUrl
+        }
+    }, {
+        new: true
+    }).select("-Password -refreshToken -coverImage -email -createdAt ")
+
+    res.send(updatedUser)
 })
