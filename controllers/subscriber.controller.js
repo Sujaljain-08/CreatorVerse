@@ -20,7 +20,7 @@ export const toggleSubscription = asyncWrapper(async (req, res) => {
             subscriber: userId
         })
 
-        res.json({
+        return res.json({
             "status": "success",
             "message": "Subscribed successfully"
         })

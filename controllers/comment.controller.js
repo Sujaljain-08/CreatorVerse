@@ -49,3 +49,21 @@ export const updateComment = asyncWrapper ( async(req, res)=>{
 
     res.status(201).send("comment updated succesfully")
 })
+
+export const deleteComment = asyncWrapper( async(req, res)=>{
+    let {commentId} = req.params;
+
+    let userId = req.user._id;
+
+    const comment = await Comment.findById(commentId)
+
+    if(!comment){
+        throw new customErrors(400, "unable to find the comment")
+    }
+
+    if(comment.owner !== userId || comment.video !== userId) throw new customErrors(401, "you are not authorized to delete this comment")
+    
+    await comment.delete()
+    
+    res.status(202).send("deleted comment successfully")
+})

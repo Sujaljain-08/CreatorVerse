@@ -4,7 +4,7 @@ import { isUserAuthorized } from "../middlewares/auth.middleware.js";
 
 const Router = express.Router();
 
-Router.get("/toggleSubscribe/:channelId", isUserAuthorized, controller.toggleSubscription)
+Router.post("/toggleSubscribe/:channelId", isUserAuthorized, controller.toggleSubscription)
 
 Router.get("/getSubscribedChannels", isUserAuthorized, controller.getSubscribedChannels)
 
